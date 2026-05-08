@@ -3,3 +3,9 @@ En este repositorio se encuentran solamante **Entregables del Proyecto de Ducky 
 
 Para poder ver el y correr localmente el prototipo de la aplicación, favor de usar el GITHUB: 
 https://github.com/PabloCoRz/duckybiblioteca
+
+Pasos para poder correrlo:
+1. Haz un git clone en tu computadora.
+2. Corre "npm install" (solamente la primera vez).
+3. Corre "npm run dev".
+4. Entra a http://localhost:3000 (verifica que sea el correcto)
