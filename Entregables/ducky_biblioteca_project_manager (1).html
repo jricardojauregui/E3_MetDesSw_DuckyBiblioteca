@@ -1,0 +1,180 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.pm{padding:1.25rem 0}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px}
+.title{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.subtitle{font-size:13px;color:var(--color-text-secondary);margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem}
+.stat-n{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.stat-l{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.tabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:.5px solid var(--color-border-tertiary);padding-bottom:0}
+.tab{padding:7px 14px;font-size:13px;font-weight:400;color:var(--color-text-secondary);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--color-text-primary);font-weight:500;border-bottom:2px solid var(--color-text-primary)}
+.sprint{margin-bottom:1.25rem;border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.sprint-header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:var(--color-background-secondary);cursor:pointer;user-select:none}
+.sprint-left{display:flex;align-items:center;gap:10px}
+.sprint-name{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.sprint-dates{font-size:12px;color:var(--color-text-secondary)}
+.sprint-right{display:flex;align-items:center;gap:10px}
+.prog-wrap{width:100px;height:6px;background:var(--color-background-primary);border-radius:3px;overflow:hidden;border:.5px solid var(--color-border-tertiary)}
+.prog-bar{height:100%;border-radius:3px;background:#1D9E75;transition:width .3s}
+.prog-pct{font-size:12px;color:var(--color-text-secondary);min-width:30px;text-align:right}
+.chevron{font-size:16px;color:var(--color-text-tertiary);transition:transform .2s}
+.chevron.open{transform:rotate(180deg)}
+.tasks{display:none}
+.tasks.open{display:block}
+.task-row{display:grid;grid-template-columns:28px 1fr 90px 90px 70px;align-items:center;gap:8px;padding:.6rem 1rem;border-top:.5px solid var(--color-border-tertiary);cursor:pointer;transition:background .15s}
+.task-row:hover{background:var(--color-background-secondary)}
+.chk{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.chk.done{background:#1D9E75;border-color:#1D9E75}
+.chk.done i{color:#fff;font-size:10px}
+.task-name{font-size:13px;color:var(--color-text-primary)}
+.task-name.done{text-decoration:line-through;color:var(--color-text-tertiary)}
+.assignee{font-size:12px;color:var(--color-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.tag-feature{background:#E1F5EE;color:#0F6E56}
+.tag-docs{background:#E6F1FB;color:#185FA5}
+.tag-design{background:#EEEDFE;color:#534AB7}
+.tag-devops{background:#FAEEDA;color:#854F0B}
+.prio{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
+.prio-high{background:#E24B4A}
+.prio-med{background:#EF9F27}
+.prio-low{background:#1D9E75}
+.col-header{display:grid;grid-template-columns:28px 1fr 90px 90px 70px;gap:8px;padding:.4rem 1rem;background:var(--color-background-secondary);border-bottom:.5px solid var(--color-border-tertiary)}
+.col-h{font-size:11px;color:var(--color-text-tertiary);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.empty{padding:1.5rem;text-align:center;font-size:13px;color:var(--color-text-tertiary)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:1rem}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
+.badge-done{display:inline-block;font-size:11px;padding:2px 10px;border-radius:20px;background:#E1F5EE;color:#0F6E56;font-weight:500}
+</style>
+<h2 class="sr-only">Tablero de proyecto Ducky Biblioteca — completado al 100%</h2>
+<div class="pm">
+  <div class="top">
+    <div>
+      <div class="title">🦆 Ducky Biblioteca — Plan de Proyecto</div>
+      <div class="subtitle">Sistema web de biblioteca · Universidad Ducky · Next.js + Prisma · Entregado 08/05/2026</div>
+    </div>
+    <span class="badge-done">✓ Proyecto completado</span>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="setView('sprints')">Por Sprint</button>
+    <button class="tab" onclick="setView('pendiente')">Pendientes</button>
+  </div>
+  <div id="board"></div>
+  <div class="legend">
+    <span class="leg"><span class="prio prio-high"></span>Alta prioridad</span>
+    <span class="leg"><span class="prio prio-med"></span>Media</span>
+    <span class="leg"><span class="prio prio-low"></span>Baja</span>
+    <span class="leg"><span class="tag tag-feature">feature</span></span>
+    <span class="leg"><span class="tag tag-docs">docs</span></span>
+    <span class="leg"><span class="tag tag-design">design</span></span>
+    <span class="leg"><span class="tag tag-devops">devops</span></span>
+  </div>
+</div>
+<script>
+const sprints=[
+  {id:0,name:"Sprint 0 — Setup & Análisis",dates:"15 abr – 21 abr 2026",tasks:[
+    {id:"s0-1",name:"Configurar repositorio Next.js + Prisma",who:"Pablo",tag:"devops",prio:"high",done:true},
+    {id:"s0-2",name:"Definir esquema de base de datos (Prisma schema)",who:"Pablo",tag:"feature",prio:"high",done:true},
+    {id:"s0-3",name:"Levantar entorno de desarrollo local",who:"Equipo",tag:"devops",prio:"high",done:true},
+    {id:"s0-4",name:"Elaborar diagrama de casos de uso inicial",who:"Ricardo",tag:"docs",prio:"high",done:true},
+    {id:"s0-5",name:"Elaborar diagrama de clases inicial",who:"Pablo",tag:"docs",prio:"high",done:true},
+    {id:"s0-6",name:"Elaborar diagrama entidad-relación inicial",who:"Pablo",tag:"docs",prio:"high",done:true},
+  ]},
+  {id:1,name:"Sprint 1 — Autenticación & Estructura Base",dates:"22 abr – 28 abr 2026",tasks:[
+    {id:"s1-1",name:"Implementar autenticación con middleware",who:"Pablo",tag:"feature",prio:"high",done:true},
+    {id:"s1-2",name:"Crear layout principal y navegación",who:"Pablo",tag:"feature",prio:"high",done:true},
+    {id:"s1-3",name:"Módulo de gestión de libros (CRUD)",who:"Pablo",tag:"feature",prio:"high",done:true},
+    {id:"s1-4",name:"Función buscar libro (web)",who:"Arturo",tag:"feature",prio:"high",done:true},
+    {id:"s1-5",name:"Revisión con cliente — 1ª minuta (04/05)",who:"Equipo",tag:"docs",prio:"high",done:true},
+  ]},
+  {id:2,name:"Sprint 2 — Correcciones 1er Avance",dates:"29 abr – 04 may 2026",tasks:[
+    {id:"s2-1",name:"Actualizar diagrama de clases (relaciones Escolar/RRHH/Tesorería)",who:"Pablo",tag:"docs",prio:"high",done:true},
+    {id:"s2-2",name:"Actualizar diagrama entidad-relación (áreas Universidad Ducky)",who:"Pablo",tag:"docs",prio:"high",done:true},
+    {id:"s2-3",name:"Desarrollo versión móvil — función buscar libro",who:"Pablo",tag:"feature",prio:"high",done:true},
+  ]},
+  {id:3,name:"Sprint 3 — Chatbot & Casos de Uso",dates:"05 may – 07 may 2026",tasks:[
+    {id:"s3-1",name:"Diseño e integración de chatbot a la aplicación",who:"Andrés",tag:"feature",prio:"high",done:true},
+    {id:"s3-2",name:"Conectar chatbot con lógica de consultas",who:"Andrés",tag:"feature",prio:"high",done:true},
+    {id:"s3-3",name:"Actualizar casos de uso en base a revisión",who:"Ricardo",tag:"docs",prio:"high",done:true},
+    {id:"s3-4",name:"UI/UX revisión responsive",who:"Vicente",tag:"design",prio:"med",done:true},
+    {id:"s3-5",name:"Pruebas unitarias módulo de búsqueda",who:"Arturo",tag:"feature",prio:"med",done:true},
+    {id:"s3-6",name:"Segunda minuta de junta (04/05)",who:"Equipo",tag:"docs",prio:"high",done:true},
+  ]},
+  {id:4,name:"Sprint 4 — Entrega Final",dates:"08 may 2026",tasks:[
+    {id:"s4-1",name:"Documentación técnica final",who:"Ricardo",tag:"docs",prio:"med",done:true},
+    {id:"s4-2",name:"Entrega y demo final — Universidad Ducky",who:"Equipo",tag:"docs",prio:"high",done:true},
+  ]},
+];
+
+let open={0:false,1:false,2:false,3:false,4:true};
+let view="sprints";
+const tagClass={feature:"tag-feature",docs:"tag-docs",design:"tag-design",devops:"tag-devops"};
+
+function toggle(sid){open[sid]=!open[sid];render()}
+function setView(v){view=v;document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['sprints','pendiente'][i]===v));render()}
+function toggleTask(tid){
+  for(const s of sprints)for(const t of s.tasks)if(t.id===tid){t.done=!t.done;break}
+  render()
+}
+
+function render(){
+  const allTasks=sprints.flatMap(s=>s.tasks);
+  const total=allTasks.length,done=allTasks.filter(t=>t.done).length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-n">${total}</div><div class="stat-l">Total tareas</div></div>
+    <div class="stat"><div class="stat-n" style="color:#1D9E75">${done}</div><div class="stat-l">Completadas</div></div>
+    <div class="stat"><div class="stat-n" style="color:#EF9F27">${total-done}</div><div class="stat-l">Pendientes</div></div>
+    <div class="stat"><div class="stat-n">${sprints.length}</div><div class="stat-l">Sprints</div></div>`;
+
+  let filtered=sprints;
+  if(view==='pendiente'){
+    filtered=sprints.map(s=>({...s,tasks:s.tasks.filter(t=>!t.done)})).filter(s=>s.tasks.length>0);
+  }
+
+  let html='';
+  for(const s of filtered){
+    const total=s.tasks.length,doneN=s.tasks.filter(t=>t.done).length;
+    const pct=total?Math.round(doneN/total*100):0;
+    const isOpen=open[s.id];
+    html+=`<div class="sprint">
+      <div class="sprint-header" onclick="toggle(${s.id})">
+        <div class="sprint-left">
+          <span class="sprint-name">${s.name}</span>
+          <span class="sprint-dates">${s.dates}</span>
+        </div>
+        <div class="sprint-right">
+          <span style="font-size:12px;color:var(--color-text-secondary)">${doneN}/${total}</span>
+          <div class="prog-wrap"><div class="prog-bar" style="width:${pct}%"></div></div>
+          <span class="prog-pct">${pct}%</span>
+          <i class="ti ti-chevron-down chevron ${isOpen?'open':''}" aria-hidden="true"></i>
+        </div>
+      </div>
+      <div class="tasks ${isOpen?'open':''}">
+        <div class="col-header">
+          <span></span>
+          <span class="col-h">Tarea</span>
+          <span class="col-h">Responsable</span>
+          <span class="col-h">Tipo</span>
+          <span class="col-h">Prio.</span>
+        </div>
+        ${s.tasks.map(t=>`
+          <div class="task-row" onclick="toggleTask('${t.id}')">
+            <div class="chk ${t.done?'done':''}">${t.done?'<i class="ti ti-check" aria-hidden="true"></i>':''}</div>
+            <span class="task-name ${t.done?'done':''}">${t.name}</span>
+            <span class="assignee">${t.who}</span>
+            <span><span class="tag ${tagClass[t.tag]||'tag-feature'}">${t.tag}</span></span>
+            <span><span class="prio prio-${t.prio}" title="${t.prio}"></span></span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  if(!filtered.length)html='<div class="empty">¡Sin pendientes! Proyecto completado ✓</div>';
+  document.getElementById('board').innerHTML=html;
+}
+render();
+</script>
