@@ -1,0 +1,314 @@
+
+<style>
+.tab-btn { padding: 6px 16px; border-radius: 6px; border: 1px solid var(--color-border-primary); background: var(--color-background-secondary); color: var(--color-text-secondary); cursor: pointer; font-size: 13px; transition: all .15s; }
+.tab-btn.active { background: var(--color-text-primary); color: var(--color-background-primary); }
+.section { display: none; }
+.section.active { display: block; }
+</style>
+<div style="display:flex;gap:8px;margin-bottom:12px">
+  <button class="tab-btn active" onclick="showTab('erd',this)">Entidad-relación</button>
+  <button class="tab-btn" onclick="showTab('cls',this)">Diagrama de clases</button>
+</div>
+<div id="erd" class="section active"></div>
+<div id="cls" class="section"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    primaryColor: dark ? '#3C3489' : '#EEEDFE',
+    primaryBorderColor: dark ? '#AFA9EC' : '#534AB7',
+    primaryTextColor: dark ? '#CECBF6' : '#26215C',
+    secondaryColor: dark ? '#085041' : '#E1F5EE',
+    secondaryBorderColor: dark ? '#5DCAA5' : '#0F6E56',
+    secondaryTextColor: dark ? '#9FE1CB' : '#085041',
+    tertiaryColor: dark ? '#633806' : '#FAEEDA',
+    tertiaryBorderColor: dark ? '#EF9F27' : '#854F0B',
+    tertiaryTextColor: dark ? '#FAC775' : '#412402',
+  },
+});
+
+const erd = `erDiagram
+  USUARIO {
+    int id PK
+    string email UK
+    string passwordHash
+    string nombre
+    string apellido
+    string genero
+    int edad
+    string rol
+    boolean activo
+    boolean emailVerificado
+    datetime createdAt
+  }
+  AUTOR {
+    int id PK
+    string nombre
+  }
+  LIBRO {
+    int id PK
+    string isbn UK
+    string titulo
+    string subtitulo
+    string editorial
+    string edicion
+    int anioPub
+    int numPaginas
+    string categoria
+    string idioma
+    string descripcion
+    string portadaUrl
+    datetime createdAt
+  }
+  LIBROAUTOR {
+    int libroId PK
+    int autorId PK
+  }
+  COPIA {
+    int id PK
+    int libroId FK
+    string codigoInterno UK
+    string pasillo
+    string estante
+    string estado
+    datetime createdAt
+  }
+  PRESTAMO {
+    int id PK
+    int usuarioId FK
+    int copiaId FK
+    datetime fechaPrestamo
+    datetime fechaDevolucion
+    datetime fechaRealDev
+    string estado
+    int renovaciones
+  }
+  MULTA {
+    int id PK
+    int prestamoId FK
+    int usuarioId FK
+    float monto
+    string motivo
+    string estado
+    datetime fecha
+  }
+  REPORTE {
+    int id PK
+    int generadoPorId FK
+    string tipo
+    json parametros
+    string resultadoUrl
+    datetime createdAt
+  }
+  TOKEN {
+    int id PK
+    string email
+    string token UK
+    string tipo
+    datetime expira
+    datetime createdAt
+  }
+  SERVICIOS_ESCOLARES {
+    string matricula PK
+    string nombre
+    string email UK
+    string carrera
+    string status
+  }
+  DIRECCION_ACADEMICA {
+    string numEmpleado PK
+    string nombre
+    string email UK
+    string departamento
+  }
+  TESORERIA {
+    string folio PK
+    string concepto
+    float monto
+    string status
+    string alumnoId FK
+    datetime fechaVencimiento
+  }
+
+  USUARIO ||--o{ PRESTAMO : "realiza"
+  USUARIO ||--o{ MULTA : "recibe"
+  USUARIO ||--o{ REPORTE : "genera"
+  LIBRO ||--o{ LIBROAUTOR : "tiene"
+  AUTOR ||--o{ LIBROAUTOR : "escribe"
+  LIBRO ||--o{ COPIA : "tiene"
+  COPIA ||--o{ PRESTAMO : "prestada en"
+  PRESTAMO ||--o| MULTA : "genera"
+  USUARIO }o--o| SERVICIOS_ESCOLARES : "verifica estudiante"
+  USUARIO }o--o| DIRECCION_ACADEMICA : "verifica maestro"
+  MULTA }o--o{ TESORERIA : "notifica cargo"
+`;
+
+const cls = `classDiagram
+  class Usuario {
+    +Int id
+    +String email
+    +String nombre
+    +String apellido
+    +Rol rol
+    +Boolean activo
+    +Boolean emailVerificado
+  }
+  class Libro {
+    +Int id
+    +String isbn
+    +String titulo
+    +String editorial
+    +String categoria
+  }
+  class Autor {
+    +Int id
+    +String nombre
+  }
+  class LibroAutor {
+    +Int libroId
+    +Int autorId
+  }
+  class Copia {
+    +Int id
+    +Int libroId
+    +String codigoInterno
+    +EstadoCopia estado
+  }
+  class Prestamo {
+    +Int id
+    +Int usuarioId
+    +Int copiaId
+    +EstadoPrestamo estado
+    +Int renovaciones
+  }
+  class Multa {
+    +Int id
+    +Int prestamoId
+    +Float monto
+    +EstadoMulta estado
+  }
+  class Reporte {
+    +Int id
+    +String tipo
+  }
+  class Token {
+    +String email
+    +String token
+    +TipoToken tipo
+    +DateTime expira
+  }
+  class ServiciosEscolares {
+    <<external>>
+    +String matricula
+    +String nombre
+    +String carrera
+  }
+  class DireccionAcademica {
+    <<external>>
+    +String numEmpleado
+    +String nombre
+    +String departamento
+  }
+  class Tesoreria {
+    <<external>>
+    +String folio
+    +Float monto
+    +String alumnoId
+  }
+  class Rol {
+    <<enumeration>>
+    Administrador
+    Bibliotecario
+    Estudiante
+    Maestro
+    Colaborador
+  }
+  class EstadoCopia {
+    <<enumeration>>
+    Disponible
+    Prestada
+    Perdida
+    Dañada
+  }
+  class EstadoPrestamo {
+    <<enumeration>>
+    Activo
+    Renovado
+    Devuelto
+    Perdido
+  }
+  class EstadoMulta {
+    <<enumeration>>
+    Pendiente
+    Pagada
+  }
+  class TipoToken {
+    <<enumeration>>
+    VerificacionEmail
+    ResetPassword
+  }
+
+  Usuario "1" --> "0..*" Prestamo : realiza
+  Usuario "1" --> "0..*" Multa : recibe
+  Usuario "1" --> "0..*" Reporte : genera
+  Usuario --> Rol : tiene
+  Libro "1" --> "1..*" Copia : tiene
+  Libro "1" --> "0..*" LibroAutor : asociado
+  Autor "1" --> "0..*" LibroAutor : escribe
+  Copia "1" --> "0..*" Prestamo : prestada en
+  Copia --> EstadoCopia : tiene
+  Prestamo "1" --> "0..1" Multa : genera
+  Prestamo --> EstadoPrestamo : tiene
+  Multa --> EstadoMulta : tiene
+  Token --> TipoToken : tiene
+  Usuario ..> ServiciosEscolares : verifica estudiante
+  Usuario ..> DireccionAcademica : verifica maestro
+  Multa ..> Tesoreria : notifica cargo
+`;
+
+async function render(containerId, source, svgId) {
+  try {
+    const { svg } = await mermaid.render(svgId, source);
+    document.getElementById(containerId).innerHTML = svg;
+    document.querySelectorAll(`#${containerId} svg .node`).forEach(node => {
+      const fp = node.querySelector('path[d]');
+      if (!fp) return;
+      const nums = fp.getAttribute('d').match(/-?[\d.]+/g)?.map(Number);
+      if (!nums || nums.length < 8) return;
+      const xs = [nums[0],nums[2],nums[4],nums[6]], ys = [nums[1],nums[3],nums[5],nums[7]];
+      const x=Math.min(...xs), y=Math.min(...ys), w=Math.max(...xs)-x, h=Math.max(...ys)-y;
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x',x); rect.setAttribute('y',y);
+      rect.setAttribute('width',w); rect.setAttribute('height',h); rect.setAttribute('rx','8');
+      for (const a of ['fill','stroke','stroke-width','class','style'])
+        if (fp.hasAttribute(a)) rect.setAttribute(a, fp.getAttribute(a));
+      fp.replaceWith(rect);
+    });
+    document.querySelectorAll(`#${containerId} svg .row-rect-odd path, #${containerId} svg .row-rect-even path`)
+      .forEach(p => p.setAttribute('stroke','none'));
+  } catch(e) {
+    document.getElementById(containerId).innerHTML = `<p style="color:var(--color-text-danger);font-size:13px">Error al renderizar: ${e.message}</p>`;
+  }
+}
+
+await render('erd', erd, 'svg-erd');
+await render('cls', cls, 'svg-cls');
+</script>
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
